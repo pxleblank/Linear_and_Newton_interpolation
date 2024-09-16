@@ -25,49 +25,54 @@ def lin_interpol(x0: list, x: list, y: list) -> list:
     return f_x_stars
 
 
-# def newton_pol(x0, x, y):
-#     def divided_diff(x, y):
-#         # Вычисление разделённых разностей через матрицу
-#         n = len(y)
-#         div_diff = [[0] * n for _ in range(n)]
-#         for i in range(n):
-#             div_diff[i][0] = y[i]
-#         for j in range(1, n):
-#             for i in range(n - j):
-#                 div_diff[i][j] = (div_diff[i + 1][j - 1] - div_diff[i][j - 1]) / (x[i + j] - x[i])
-#
-#         return div_diff[0]
-#
-#     def newton_interpol(x0, x, div_diff):
-#         n = len(div_diff)
-#         result = div_diff[0]
-#         product = 1
-#         for i in range(1, n):
-#             product *= (x0 - x[i - 1])
-#             result += div_diff[i] * product
-#         return result
-#
-#     div_diff = divided_diff(x, y)
-#     return newton_interpol(x0, x, div_diff)
-
-def newton_pol(x0, x, y):
-    # Рекурсивная функция для вычисления разделённых разностей
-    def divided_diff_recursive(x, y, i, j):
-        if j == 0:
-            return y[i]
-        return (divided_diff_recursive(x, y, i + 1, j - 1) - divided_diff_recursive(x, y, i, j - 1)) / (x[i + j] - x[i])
-
-    # Рекурсивная функция для вычисления интерполяции
-    def newton_interpol_recursive(x0, x, i):
-        if i == 0:
-            return divided_diff_recursive(x, y, 0, 0)
-        product = 1
-        for j in range(i):
-            product *= (x0 - x[j])
-        return divided_diff_recursive(x, y, 0, i) * product + newton_interpol_recursive(x0, x, i - 1)
-
+def divided_diff(x, y):
+    """Функция для вычисления таблицы разделённых разностей"""
     n = len(x)
-    return newton_interpol_recursive(x0, x, n - 1)
+    div_diff = [[0.] * len(x) for _ in range(len(x))]
+
+    # Первая колонка — это значения y
+    for i in range(n):
+        div_diff[i][0] = y[i]
+
+    # Вычисляем разделённые разности
+    for j in range(1, n):
+        for i in range(n - j):
+            div_diff[i][j] = (div_diff[i + 1][j - 1] - div_diff[i][j - 1]) / (x[i + j] - x[i])
+
+    return div_diff[0]  # Возвращаем только верхнюю строку (разделённые разности)
+
+
+def newton_pol(x0, x, div_diff):
+    """Функция для вычисления полинома Ньютона"""
+    n = len(div_diff)
+    result = div_diff[0]
+    product = 1
+
+    for i in range(1, n):
+        product *= (x0 - x[i - 1])
+        result += float(div_diff[i]) * product
+
+    return result
+
+
+# def newton_pol(x0, x, y):
+#     # Рекурсивная функция для вычисления разделённых разностей
+#     def divided_diff_recursive(x, y, i, j):
+#         if j == 0:
+#             return y[i]
+#         return (divided_diff_recursive(x, y, i + 1, j - 1) - divided_diff_recursive(x, y, i, j - 1)) / (x[i + j] - x[i])
+#
+#     # Рекурсивная функция для вычисления интерполяции
+#     def newton_interpol_recursive(x0, x, i):
+#         if i == 0:
+#             return divided_diff_recursive(x, y, 0, 0)
+#         product = 1
+#         for j in range(i):
+#             product *= (x0 - x[j])
+#         return divided_diff_recursive(x, y, 0, i) * product + newton_interpol_recursive(x0, x, i - 1)
+#
+#     n = len(x)
+#     return newton_interpol_recursive(x0, x, n - 1)
 
 
 N = 10
@@ -86,6 +91,8 @@ for i in range(1, N):
     x[i] = a + h * (i + 0.3 * np.sin(5 * i))
     y[i] = fi(x[i])
 
+div_diff = divided_diff(x, y)
+
 x_star = float(input('x* = '))
 
 # функция fi
@@ -96,8 +103,8 @@ y0 = [fi(xi) for xi in x0]
 y_linear = lin_interpol(x0, x, y)
 y_star_linear = lin_interpol([x_star], x, y)[0]
 
-y_newton = [newton_pol(x0_i, x, y) for x0_i in x0]
-y_star_newton = newton_pol(x_star, x, y)
+y_newton = [newton_pol(x0_i, x, div_diff) for x0_i in x0]
+y_star_newton = newton_pol(x_star, x, div_diff)
 
 plt.figure(figsize=(10, 6))
 # построение fi
