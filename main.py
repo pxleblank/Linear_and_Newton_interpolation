@@ -6,29 +6,34 @@ import random
 
 def fi(x):
     global a, b
-    y = np.sin(x)
-    # if x > (a * b) / 2:
-    #     y = 2
+    y = abs(x)
     return y
 
 
-def lin_interpol(x0: list, x: list, y: list) -> list:
+# def lin_interpol(x0: list, x: list, y: list) -> list:
+#     n = len(x) - 1
+#     f_x_stars = [0] * len(x0)
+#
+#     for j in range(len(x0)):
+#         for i in range(n):
+#             if x[i] <= x0[j] <= x[i + 1]:
+#                 f_x_stars[j] = (y[i + 1] - y[i]) / (x[i + 1] - x[i]) * (x0[j] - x[i]) + y[i]
+#                 break
+#
+#     return f_x_stars
+
+def lin_interpol(x0: float, x: list, y: list) -> float:
     n = len(x) - 1
-    f_x_stars = [0] * len(x0)
 
-    for j in range(len(x0)):
-        for i in range(n):
-            if x[i] <= x0[j] <= x[i + 1]:
-                f_x_stars[j] = (y[i + 1] - y[i]) / (x[i + 1] - x[i]) * (x0[j] - x[i]) + y[i]
-                break
-
-    return f_x_stars
+    for i in range(n):
+        if x[i] <= x0 <= x[i + 1]:
+            return (y[i + 1] - y[i]) / (x[i + 1] - x[i]) * (x0 - x[i]) + y[i]
 
 
 def divided_diff(x, y):
     """Функция для вычисления таблицы разделённых разностей"""
     n = len(x)
-    div_diff = [[0.] * len(x) for _ in range(len(x))]
+    div_diff = [[0.] * n for _ in range(n)]
 
     # Первая колонка — это значения y
     for i in range(n):
@@ -75,9 +80,9 @@ def newton_pol(x0, x, div_diff):
 #     return newton_interpol_recursive(x0, x, n - 1)
 
 
-N = 10
-a = 1.
-b = 10.
+N = 20
+a = -1.
+b = 1.
 x = [0] * (N + 1)
 y = [0] * (N + 1)
 x[0] = a
@@ -88,7 +93,7 @@ y[N] = fi(b)
 h = (b - a) / N
 
 for i in range(1, N):
-    x[i] = a + h * (i + 0.3 * np.sin(5 * i))
+    x[i] = a + h * (i + 0.0 * np.sin(5 * i))
     y[i] = fi(x[i])
 
 div_diff = divided_diff(x, y)
@@ -96,12 +101,13 @@ div_diff = divided_diff(x, y)
 x_star = float(input('x* = '))
 
 # функция fi
-step = (b - a) / 500
-x0 = [a + step * i for i in range(500)]
+L = 500
+step = (b - a) / L
+x0 = [a + step * i for i in range(L+1)]
 y0 = [fi(xi) for xi in x0]
 
-y_linear = lin_interpol(x0, x, y)
-y_star_linear = lin_interpol([x_star], x, y)[0]
+y_linear = [lin_interpol(xi, x, y) for xi in x0]
+y_star_linear = lin_interpol(x_star, x, y)
 
 y_newton = [newton_pol(x0_i, x, div_diff) for x0_i in x0]
 y_star_newton = newton_pol(x_star, x, div_diff)
@@ -119,6 +125,9 @@ plt.plot(x0, y_newton, label=f'Полином Ньютона (степень {N}
 plt.scatter([x_star], [y_star_newton], color='green', marker='x', s=100, label=f'f(x*) (Ньютон)')
 
 plt.scatter(x, y, color='black', zorder=5, label='Узлы интерполяции')
+
+plt.xlim(a - (b-a)/20, b + (b-a)/20)
+plt.ylim(-1, 2)
 
 plt.xlabel('x')
 plt.ylabel('f(x)')
