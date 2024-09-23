@@ -80,9 +80,9 @@ def newton_pol(x0, x, div_diff):
 #     return newton_interpol_recursive(x0, x, n - 1)
 
 
-N = 20
-a = -1.
-b = 1.
+N = 5
+a = -1. + 0.5
+b = 1. + 0.5
 x = [0] * (N + 1)
 y = [0] * (N + 1)
 x[0] = a
@@ -99,9 +99,19 @@ h = (b - a) / N
 
 x_mid = (a + b) / 2
 r = (b - a) / 2
+# for i in range(N + 1):
+#     alpha = math.pi * i / N  # угол для каждого узла на полукруге
+#     x[i] = x_mid + r * math.cos(alpha)  # координата узла по оси x
+#     y[i] = fi(x[i])
+
+
 for i in range(N + 1):
-    alpha = math.pi * i / N  # угол для каждого узла на полукруге
-    x[i] = x_mid + r * math.cos(alpha)  # координата узла по оси x
+    alpha_i = math.pi * i / (N + 1)
+    alpha_next = math.pi * (i + 1) / (N + 1)
+
+    alpha_mid = (alpha_i + alpha_next) / 2
+
+    x[i] = x_mid + r * math.cos(alpha_mid)
     y[i] = fi(x[i])
 
 # Сортируем узлы по возрастанию x
@@ -112,7 +122,7 @@ y = list(y_sorted)
 
 div_diff = divided_diff(x, y)
 
-x_star = float(input('x* = '))
+# x_star = float(input('x* = '))
 
 # функция fi
 L = 500
@@ -120,23 +130,23 @@ step = (b - a) / L
 x0 = [a + step * i for i in range(L+1)]
 y0 = [fi(xi) for xi in x0]
 
-y_linear = [lin_interpol(xi, x, y) for xi in x0]
-y_star_linear = lin_interpol(x_star, x, y)
+# y_linear = [lin_interpol(xi, x, y) for xi in x0]
+# y_star_linear = lin_interpol(x_star, x, y)
 
 y_newton = [newton_pol(x0_i, x, div_diff) for x0_i in x0]
-y_star_newton = newton_pol(x_star, x, div_diff)
+# y_star_newton = newton_pol(x_star, x, div_diff)
 
 plt.figure(figsize=(10, 6))
 # построение fi
 plt.plot(x0, y0, label='f0(x)', color='blue', linewidth=2)
 
 # построение f(x*) линейной
-plt.plot(x0, y_linear, label='Линейная интерполяция', linestyle='--', color='red')
-plt.scatter([x_star], [y_star_linear], color='red', marker='x', s=100, label=f'f(x*) (линейная)')
+# plt.plot(x0, y_linear, label='Линейная интерполяция', linestyle='--', color='red')
+# plt.scatter([x_star], [y_star_linear], color='red', marker='x', s=100, label=f'f(x*) (линейная)')
 
 # построение f(x*) Ньютона
 plt.plot(x0, y_newton, label=f'Полином Ньютона (степень {N})', linestyle='--', color='green')
-plt.scatter([x_star], [y_star_newton], color='green', marker='x', s=100, label=f'f(x*) (Ньютон)')
+# plt.scatter([x_star], [y_star_newton], color='green', marker='x', s=100, label=f'f(x*) (Ньютон)')
 
 plt.scatter(x, y, color='black', zorder=5, label='Узлы интерполяции')
 
@@ -150,5 +160,5 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-print(f'Значение f(x*) при линейной интерполяции: {y_star_linear}')
-print(f'Значение f(x*) при интерполяции полиномом Ньютона: {y_star_newton}')
+# print(f'Значение f(x*) при линейной интерполяции: {y_star_linear}')
+# print(f'Значение f(x*) при интерполяции полиномом Ньютона: {y_star_newton}')
