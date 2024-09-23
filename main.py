@@ -92,9 +92,23 @@ y[N] = fi(b)
 
 h = (b - a) / N
 
-for i in range(1, N):
-    x[i] = a + h * (i + 0.0 * np.sin(5 * i))
+# for i in range(1, N):
+#     x[i] = a + h * (i + 0.0 * np.sin(5 * i))
+#     y[i] = fi(x[i])
+
+
+x_mid = (a + b) / 2
+r = (b - a) / 2
+for i in range(N + 1):
+    alpha = math.pi * i / N  # угол для каждого узла на полукруге
+    x[i] = x_mid + r * math.cos(alpha)  # координата узла по оси x
     y[i] = fi(x[i])
+
+# Сортируем узлы по возрастанию x
+sorted_pairs = sorted(zip(x, y))
+x_sorted, y_sorted = zip(*sorted_pairs)
+x = list(x_sorted)
+y = list(y_sorted)
 
 div_diff = divided_diff(x, y)
 
